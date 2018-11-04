@@ -7,22 +7,39 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-require(readr)
-require(dplyr) 
-require(tidyr)  
-require(purrr)
+library(readr)
+library(dplyr) 
+library(purrr)
+library(tidyr)
+library(ggplot2)
+library(ggrepel)
 ```
 
 ## Problem 1
-Create tidy dataframe with subject ID, arm, and results.
+#### Create tidy dataframe with subject ID, arm, and results.
 ```{r message = FALSE}
 data = data_frame(filename = list.files("data")) %>% 
   mutate(map(filename, ~ read_csv(file.path("data", .)))) %>% 
-  unnest() %>% separate(filename, c('arm', 'id'), sep = ".csv") %>% separate(arm, c('arm', 'id'), sep = "_") %>% 
-  gather(week, everything(), -arm, -id) %>% separate(week, c('x', 'week'), sep = "_") %>% select(arm, id, week, value = "everything()")
+  unnest() %>% 
+  separate(filename, c('arm', 'id'), sep = ".csv") %>%
+  separate(arm, c('arm', 'id'), sep = "_") %>% 
+  gather(week, everything(), -arm, -id) %>% 
+  separate(week, c('x', 'week'), sep = "_") %>% 
+  select(arm, id, week, value = "everything()") %>% 
+  mutate(week = as.numeric(week))
 ```
 
-Spaghetti plot
+#### Spaghetti plot
+```{r}
+data %>%
+  ggplot(aes(x = week, y = value, colour = arm, 
+             group = interaction(arm, id))) + 
+  geom_text_repel(aes(label = ifelse(week > 7, id, "")), 
+                  nudge_x = 0.4, size = 3) + 
+  ggtitle("Control and Experimental Arms Over Time") + geom_line()
+```
+
+## Problem 2
 ```{r}
 
 ```
