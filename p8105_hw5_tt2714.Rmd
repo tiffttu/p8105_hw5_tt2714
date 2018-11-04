@@ -14,10 +14,13 @@ library(tidyr)
 library(ggplot2)
 library(ggrepel)
 library(stringr)
+library(broom)
+library(knitr)
 ```
 
 ## Problem 1
-#### Create tidy dataframe with subject ID, arm, and results.
+#### Tidy zipfile data from longitudinal study
+Tidy dataframe with subject ID, arm, and results.
 ```{r message = FALSE}
 data = data_frame(filename = list.files("data")) %>% 
   mutate(map(filename, ~ read_csv(file.path("data", .)))) %>% 
@@ -39,18 +42,30 @@ data %>%
                   nudge_x = 0.4, size = 3) + 
   ggtitle("Control and Experimental Arms Over Time") + geom_line()
 ```
-* comments 
 
+The experimental arm population has greater growth in value over the 9 week period as compared to the control arm. 
      
 ## Problem 2
-* comment on raw data
-    
+
+#### Homicide data in 50 large U.S. cities from Washington Post
 ```{r message = FALSE}
-homicide_citystate = read_csv(file = "./homicide-data.csv") %>% 
+homicide = read_csv(file = "./homicide-data.csv") 
+homicide_citystate = homicide %>% 
   unite(city_state, c(city, state), sep = ", ", remove = T) %>% 
   mutate(disposition = gsub('Closed by arrest', 'homicide', disposition), 
          disposition = gsub('Closed without arrest|Open/No arrest', 'unsolved', disposition)) %>% 
   group_by(city_state, disposition) %>% 
-  summarize(count = n())
+  summarize(count = n()) %>% group_by(city_state) %>% 
+  spread(disposition, count) %>% mutate(total = homicide + unsolved)
+```
+The raw dataset provides `r ncol(homicide)` columns, describing the incident id, reported date, first and last name of the victim, race, age, sex, city, state, exact location coordinates, and disposition. 
+
+#### City of Baltimore, MD
+```{r}
+baltimore = homicide_citystate %>% filter(city_state == 'Baltimore, MD')
+balt = prop.test(baltimore$unsolved, baltimore$total) %>% tidy %>% 
+  select(estimate, conf.low, conf.high) 
+kable(balt, caption = "Baltimore, MD - Proportion of unsolved homicides")
 ```
 
+#### Proportion of unsolved homicides
