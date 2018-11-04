@@ -13,6 +13,7 @@ library(purrr)
 library(tidyr)
 library(ggplot2)
 library(ggrepel)
+library(stringr)
 ```
 
 ## Problem 1
@@ -38,9 +39,18 @@ data %>%
                   nudge_x = 0.4, size = 3) + 
   ggtitle("Control and Experimental Arms Over Time") + geom_line()
 ```
+* comments 
 
+     
 ## Problem 2
-```{r}
-homocide = read_csv(file = "./homocide-data.csv")
+* comment on raw data
+    
+```{r message = FALSE}
+homicide_citystate = read_csv(file = "./homicide-data.csv") %>% 
+  unite(city_state, c(city, state), sep = ", ", remove = T) %>% 
+  mutate(disposition = gsub('Closed by arrest', 'homicide', disposition), 
+         disposition = gsub('Closed without arrest|Open/No arrest', 'unsolved', disposition)) %>% 
+  group_by(city_state, disposition) %>% 
+  summarize(count = n())
 ```
 
