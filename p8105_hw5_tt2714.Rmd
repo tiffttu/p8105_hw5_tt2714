@@ -41,6 +41,6 @@ data %>%
 
 ## Problem 2
 ```{r}
-
+homocide = read_csv(file = "./homocide-data.csv")
 ```
 
