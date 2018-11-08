@@ -55,7 +55,8 @@ homicide_citystate = homicide %>%
   mutate(disposition = gsub('Closed by arrest', 'homicide', disposition), 
          disposition = gsub('Closed without arrest|Open/No arrest', 'unsolved', disposition)) %>% 
   group_by(city_state, disposition) %>% 
-  summarize(count = n()) %>% spread(disposition, count) %>% mutate(unsolved = replace_na(unsolved, 0), total = homicide + unsolved)
+  summarize(count = n()) %>% spread(disposition, count) %>% mutate(unsolved = replace_na(unsolved, 0), total = homicide + unsolved) %>% 
+  filter(unsolved > 0)
 ```
 The raw dataset provides `r ncol(homicide)` columns, describing the incident id, reported date, first and last name of the victim, race, age, sex, city, state, exact location coordinates, and disposition. 
 
